@@ -22,7 +22,7 @@ func ServerCreate(writer http.ResponseWriter, request *http.Request) {
 	}
 	requestContent := make(map[string]string)
 	json.Unmarshal(body, &requestContent)
-	key, value := requestContent["key"], requestContent["Value"]
+	key, value := requestContent["key"], requestContent["value"]
 	if key == "" || value == "" || !DataCreate(key, value) {
 		fmt.Fprintf(writer, "Failed to create.")
 	}
@@ -50,7 +50,7 @@ func ServerUpdate(writer http.ResponseWriter, request *http.Request) {
 	}
 	requestContent := make(map[string]string)
 	json.Unmarshal(body, &requestContent)
-	value := requestContent["Value"]
+	value := requestContent["value"]
 	if value == "" || !DataUpdate(key, value) {
 		fmt.Fprintf(writer, "Failed to create.")
 	}

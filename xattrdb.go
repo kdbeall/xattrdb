@@ -9,6 +9,7 @@ import (
 func Init(path string, shards int) {
 	SetPath(path)
 	SetShards(shards)
+	CreateShards()
 	router := mux.NewRouter()
 	router.HandleFunc("/xattrdb", ServerCreate).Methods("POST")
 	router.HandleFunc("/xattrdb/{key}", ServerRead).Methods("GET")
