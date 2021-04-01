@@ -7,13 +7,37 @@ import (
 	"io/ioutil"
 	"log"
 	"math/big"
+	"os"
+	"strconv"
 
 	xattr "github.com/pkg/xattr"
 )
 
-const defaultPath = "~/.xattrdb/location"
-const prefix = "user."
-const shardingEnabled = false
+const (
+	prefix = "user."
+)
+
+var shards int64
+var path string
+
+func SetShards(num int) {
+	shards = int64(num)
+}
+
+func SetPath(fp string) {
+	path = fp
+}
+
+func GetPath() string {
+	return path
+}
+
+func CreateShards() {
+	for i := 0; int64(i) < shards; i++ {
+		locationNum := strconv.Itoa(i)
+		os.OpenFile(path+locationNum, os.O_RDONLY|os.O_CREATE, 0666)
+	}
+}
 
 func DataCreate(key, value string) bool {
 	return DataUpdate(key, value)
@@ -87,10 +111,9 @@ func Shard(key string) string {
 	hKey := Hash(key)
 	result, i, locations := new(big.Int), new(big.Int), new(big.Int)
 	i = i.SetBytes(hKey)
-	locations = locations.SetInt64(2)
+	locations = locations.SetInt64(int64(shards))
 	result.Mod(i, locations)
-	return "/home/codespace/.xattrdb/location" + result.String()
-
+	return path + result.String()
 }
 
 func Hash(key string) []byte {
