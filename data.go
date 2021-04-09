@@ -9,6 +9,7 @@ import (
 	"math/big"
 	"os"
 	"strconv"
+	"strings"
 
 	xattr "github.com/pkg/xattr"
 )
@@ -32,19 +33,27 @@ func GetPath() string {
 	return path
 }
 
+func GetName(key string) string {
+	return prefix + key
+}
+
 func CreateShards() {
+	var sb strings.Builder
 	for i := 0; int64(i) < shards; i++ {
+		sb.WriteString(GetPath())
 		locationNum := strconv.Itoa(i)
-		os.OpenFile(path+locationNum, os.O_RDONLY|os.O_CREATE, 0666)
+		sb.WriteString(locationNum)
+		os.OpenFile(sb.String(), os.O_RDONLY|os.O_CREATE, 0666)
+		sb.Reset()
 	}
 }
 
-func DataCreate(key, value string) bool {
-	return DataUpdate(key, value)
+func CreateData(key, value string) bool {
+	return UpdateData(key, value)
 }
 
-func DataRead(key string) (string, error) {
-	data, err := xattr.Get(Shard(key), prefix+key)
+func ReadData(key string) (string, error) {
+	data, err := xattr.Get(Shard(key), GetName(key))
 	if err != nil {
 		log.Println(err)
 		return "", err
@@ -57,20 +66,23 @@ func DataRead(key string) (string, error) {
 	return value, nil
 }
 
-func DataUpdate(key, value string) bool {
+func UpdateData(key, value string) bool {
+	CopyOnWrite(key)
 	compressed, err := Compress(value)
 	if err != nil {
 		log.Println(err)
 		return false
 	}
-	if err = xattr.Set(Shard(key), prefix+key, compressed); err != nil {
+	if err = xattr.Set(Shard(key), GetName(key), compressed); err != nil {
 		log.Println(err)
+		return false
 	}
 	return true
 }
 
-func DataDelete(key string) bool {
-	if err := xattr.Remove(Shard(key), prefix+key); err != nil {
+func DeleteData(key string) bool {
+	CopyOnWrite(key)
+	if err := xattr.Remove(Shard(key), GetName(key)); err != nil {
 		log.Println(err)
 		return false
 	}
