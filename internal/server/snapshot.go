@@ -1,4 +1,4 @@
-package xattrdb
+package server
 
 import (
 	"errors"
@@ -8,7 +8,7 @@ import (
 	"strings"
 	"time"
 
-	xattr "github.com/pkg/xattr"
+	"github.com/pkg/xattr"
 )
 
 var snapshots []string = make([]string, 0)

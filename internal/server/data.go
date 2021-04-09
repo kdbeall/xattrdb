@@ -1,4 +1,4 @@
-package xattrdb
+package server
 
 import (
 	"bytes"
