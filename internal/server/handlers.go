@@ -80,7 +80,7 @@ func ServerReadSnapshot(writer http.ResponseWriter, request *http.Request) {
 	params := mux.Vars(request)
 	snapshot := params["snapshot"]
 	key := params["key"]
-	value, err := ReadSnapshot(key, snapshot)
+	value, err := ReadSnapshot(snapshot, key)
 	if err != nil {
 		fmt.Fprintf(writer, "Failed to read.")
 		return
