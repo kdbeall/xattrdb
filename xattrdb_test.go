@@ -46,3 +46,34 @@ func TestSharding(t *testing.T) {
 		assert.Equal(t, GetPath()+"1", Shard("foo"))
 	})
 }
+
+func TestSnapshot(t *testing.T) {
+	t.Run("storing a string", func(t *testing.T) {
+		assert.Equal(t, true, DataUpdate("foo", "bar"))
+	})
+	t.Run("reading a string after update", func(t *testing.T) {
+		actual, err := DataRead("foo")
+		assert.Nil(t, err)
+		assert.Equal(t, "bar", actual)
+	})
+	CreateSnapshot()
+	t.Run("storing a string", func(t *testing.T) {
+		assert.Equal(t, true, DataUpdate("foo", "qaz"))
+	})
+	t.Run("reading a string after update", func(t *testing.T) {
+		actual, err := DataRead("foo")
+		assert.Nil(t, err)
+		assert.Equal(t, "qaz", actual)
+	})
+	t.Run("reading a string from a snapshot", func(t *testing.T) {
+		actual, err := ReadSnapshot("foo", GetSnapshots()[0])
+		assert.Nil(t, err)
+		assert.Equal(t, "bar", actual)
+	})
+	DataDelete("foo")
+	t.Run("reading a string from a snapshot", func(t *testing.T) {
+		actual, err := ReadSnapshot("foo", GetSnapshots()[0])
+		assert.Nil(t, err)
+		assert.Equal(t, "bar", actual)
+	})
+}

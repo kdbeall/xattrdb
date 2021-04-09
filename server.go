@@ -63,3 +63,21 @@ func ServerDelete(writer http.ResponseWriter, request *http.Request) {
 		fmt.Fprintf(writer, "Failed to delete.")
 	}
 }
+
+func ServerSnapshot(writer http.ResponseWriter, request *http.Request) {
+	writer.Header().Set("Content-Type", "application/json")
+	CreateSnapshot()
+}
+
+func ServerReadSnapshot(writer http.ResponseWriter, request *http.Request) {
+	writer.Header().Set("Content-Type", "application/json")
+	params := mux.Vars(request)
+	snapshot := params["snapshot"]
+	key := params["key"]
+	value, err := ReadSnapshot(key, snapshot)
+	if err != nil {
+		fmt.Fprintf(writer, "Failed to read.")
+		return
+	}
+	json.NewEncoder(writer).Encode(Value{value})
+}
