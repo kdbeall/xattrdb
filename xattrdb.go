@@ -15,5 +15,7 @@ func Init(path string, shards int) {
 	router.HandleFunc("/xattrdb/{key}", ServerRead).Methods("GET")
 	router.HandleFunc("/xattrdb/{key}", ServerUpdate).Methods("PUT")
 	router.HandleFunc("/xattrdb/{key}", ServerDelete).Methods("DELETE")
+	router.HandleFunc("/xattrdb/snapshots", ServerCreateSnapshot).Methods("POST")
+	router.HandleFunc("/xattrdb/snapshots/{snapshot}/{key}", ServerReadSnapshot).Methods("GET")
 	http.ListenAndServe(":8000", router)
 }

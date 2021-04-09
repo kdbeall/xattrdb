@@ -48,11 +48,11 @@ func CreateShards() {
 	}
 }
 
-func DataCreate(key, value string) bool {
-	return DataUpdate(key, value)
+func CreateData(key, value string) bool {
+	return UpdateData(key, value)
 }
 
-func DataRead(key string) (string, error) {
+func ReadData(key string) (string, error) {
 	data, err := xattr.Get(Shard(key), GetName(key))
 	if err != nil {
 		log.Println(err)
@@ -66,7 +66,7 @@ func DataRead(key string) (string, error) {
 	return value, nil
 }
 
-func DataUpdate(key, value string) bool {
+func UpdateData(key, value string) bool {
 	CopyOnWrite(key)
 	compressed, err := Compress(value)
 	if err != nil {
@@ -80,7 +80,7 @@ func DataUpdate(key, value string) bool {
 	return true
 }
 
-func DataDelete(key string) bool {
+func DeleteData(key string) bool {
 	CopyOnWrite(key)
 	if err := xattr.Remove(Shard(key), GetName(key)); err != nil {
 		log.Println(err)

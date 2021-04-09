@@ -21,18 +21,18 @@ func setup() {
 
 func TestStorage(t *testing.T) {
 	t.Run("storing a string", func(t *testing.T) {
-		assert.Equal(t, true, DataUpdate("foo", "bar"))
+		assert.Equal(t, true, UpdateData("foo", "bar"))
 	})
 	t.Run("reading a string", func(t *testing.T) {
-		actual, err := DataRead("foo")
+		actual, err := ReadData("foo")
 		assert.Nil(t, err)
 		assert.Equal(t, "bar", actual)
 	})
 	t.Run("updating a string", func(t *testing.T) {
-		assert.Equal(t, true, DataUpdate("foo", "qaz"))
+		assert.Equal(t, true, UpdateData("foo", "qaz"))
 	})
 	t.Run("reading a string after update", func(t *testing.T) {
-		actual, err := DataRead("foo")
+		actual, err := ReadData("foo")
 		assert.Nil(t, err)
 		assert.Equal(t, "qaz", actual)
 	})
@@ -49,31 +49,37 @@ func TestSharding(t *testing.T) {
 
 func TestSnapshot(t *testing.T) {
 	t.Run("storing a string", func(t *testing.T) {
-		assert.Equal(t, true, DataUpdate("foo", "bar"))
+		assert.Equal(t, true, UpdateData("foo", "bar"))
 	})
 	t.Run("reading a string after update", func(t *testing.T) {
-		actual, err := DataRead("foo")
+		actual, err := ReadData("foo")
 		assert.Nil(t, err)
 		assert.Equal(t, "bar", actual)
 	})
-	CreateSnapshot()
+	firstSnapshot := CreateSnapshot()
 	t.Run("storing a string", func(t *testing.T) {
-		assert.Equal(t, true, DataUpdate("foo", "qaz"))
+		assert.Equal(t, true, UpdateData("foo", "qaz"))
 	})
 	t.Run("reading a string after update", func(t *testing.T) {
-		actual, err := DataRead("foo")
+		actual, err := ReadData("foo")
 		assert.Nil(t, err)
 		assert.Equal(t, "qaz", actual)
 	})
+	secondSnapshot := CreateSnapshot()
 	t.Run("reading a string from a snapshot", func(t *testing.T) {
-		actual, err := ReadSnapshot("foo", GetSnapshots()[0])
+		actual, err := ReadSnapshot(firstSnapshot, "foo")
 		assert.Nil(t, err)
 		assert.Equal(t, "bar", actual)
 	})
-	DataDelete("foo")
+	DeleteData("foo")
 	t.Run("reading a string from a snapshot", func(t *testing.T) {
-		actual, err := ReadSnapshot("foo", GetSnapshots()[0])
+		actual, err := ReadSnapshot(firstSnapshot, "foo")
 		assert.Nil(t, err)
 		assert.Equal(t, "bar", actual)
+	})
+	t.Run("reading a string from a snapshot", func(t *testing.T) {
+		actual, err := ReadSnapshot(secondSnapshot, "foo")
+		assert.Nil(t, err)
+		assert.Equal(t, "qaz", actual)
 	})
 }

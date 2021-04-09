@@ -13,6 +13,10 @@ type Value struct {
 	Value string `json:"value"`
 }
 
+type Snapshot struct {
+	Snapshot string `json:"snapshot"`
+}
+
 func ServerCreate(writer http.ResponseWriter, request *http.Request) {
 	writer.Header().Set("Content-Type", "application/json")
 	body, err := ioutil.ReadAll(request.Body)
@@ -23,7 +27,7 @@ func ServerCreate(writer http.ResponseWriter, request *http.Request) {
 	requestContent := make(map[string]string)
 	json.Unmarshal(body, &requestContent)
 	key, value := requestContent["key"], requestContent["value"]
-	if key == "" || value == "" || !DataCreate(key, value) {
+	if key == "" || value == "" || !CreateData(key, value) {
 		fmt.Fprintf(writer, "Failed to create.")
 	}
 }
@@ -31,7 +35,7 @@ func ServerCreate(writer http.ResponseWriter, request *http.Request) {
 func ServerRead(writer http.ResponseWriter, request *http.Request) {
 	writer.Header().Set("Content-Type", "application/json")
 	params := mux.Vars(request)
-	value, err := DataRead(params["key"])
+	value, err := ReadData(params["key"])
 	if err != nil {
 		fmt.Fprintf(writer, "Failed to read.")
 		return
@@ -51,7 +55,7 @@ func ServerUpdate(writer http.ResponseWriter, request *http.Request) {
 	requestContent := make(map[string]string)
 	json.Unmarshal(body, &requestContent)
 	value := requestContent["value"]
-	if value == "" || !DataUpdate(key, value) {
+	if value == "" || !UpdateData(key, value) {
 		fmt.Fprintf(writer, "Failed to create.")
 	}
 }
@@ -59,14 +63,16 @@ func ServerUpdate(writer http.ResponseWriter, request *http.Request) {
 func ServerDelete(writer http.ResponseWriter, request *http.Request) {
 	writer.Header().Set("Content-Type", "application/json")
 	params := mux.Vars(request)
-	if !DataDelete(params["key"]) {
+	if !DeleteData(params["key"]) {
 		fmt.Fprintf(writer, "Failed to delete.")
 	}
 }
 
-func ServerSnapshot(writer http.ResponseWriter, request *http.Request) {
+func ServerCreateSnapshot(writer http.ResponseWriter, request *http.Request) {
 	writer.Header().Set("Content-Type", "application/json")
-	CreateSnapshot()
+	snapshot := CreateSnapshot()
+	json.NewEncoder(writer).Encode(Snapshot{snapshot})
+
 }
 
 func ServerReadSnapshot(writer http.ResponseWriter, request *http.Request) {
