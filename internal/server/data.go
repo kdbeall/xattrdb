@@ -49,7 +49,21 @@ func CreateShards() {
 }
 
 func CreateData(key, value string) bool {
-	return UpdateData(key, value)
+	_, err := xattr.Get(Shard(key), GetName(key))
+	if err == nil {
+		return false
+	}
+	compressed, err := Compress(value)
+	if err != nil {
+		log.Println(err)
+		return false
+	}
+	CopyOnWriteNil(key)
+	if err = xattr.Set(Shard(key), GetName(key), compressed); err != nil {
+		log.Println(err)
+		return false
+	}
+	return true
 }
 
 func ReadData(key string) (string, error) {
@@ -66,13 +80,27 @@ func ReadData(key string) (string, error) {
 	return value, nil
 }
 
+func ReadCompressed(key string) ([]byte, error) {
+	data, err := xattr.Get(Shard(key), GetName(key))
+	if err != nil {
+		log.Println(err)
+		return nil, err
+	}
+	return data, nil
+}
+
 func UpdateData(key, value string) bool {
-	CopyOnWrite(key)
+	_, err := xattr.Get(Shard(key), GetName(key))
+	if err != nil {
+		log.Println(err)
+		return false
+	}
 	compressed, err := Compress(value)
 	if err != nil {
 		log.Println(err)
 		return false
 	}
+	CopyOnWrite(key)
 	if err = xattr.Set(Shard(key), GetName(key), compressed); err != nil {
 		log.Println(err)
 		return false

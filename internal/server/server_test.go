@@ -21,7 +21,7 @@ func setup() {
 
 func TestStorage(t *testing.T) {
 	t.Run("storing a string", func(t *testing.T) {
-		assert.Equal(t, true, UpdateData("foo", "bar"))
+		assert.Equal(t, true, CreateData("foo", "bar"))
 	})
 	t.Run("reading a string", func(t *testing.T) {
 		actual, err := ReadData("foo")
@@ -49,7 +49,7 @@ func TestSharding(t *testing.T) {
 
 func TestSnapshot(t *testing.T) {
 	t.Run("storing a string", func(t *testing.T) {
-		assert.Equal(t, true, UpdateData("foo", "bar"))
+		assert.Equal(t, true, CreateData("foo", "bar"))
 	})
 	t.Run("reading a string after update", func(t *testing.T) {
 		actual, err := ReadData("foo")
@@ -81,5 +81,10 @@ func TestSnapshot(t *testing.T) {
 		actual, err := ReadSnapshot(secondSnapshot, "foo")
 		assert.Nil(t, err)
 		assert.Equal(t, "qaz", actual)
+	})
+	CreateData("qaz", "zaq")
+	t.Run("reading a string not held in a snapshot", func(t *testing.T) {
+		actual, _ := ReadSnapshot(firstSnapshot, "qaz")
+		assert.Equal(t, "", actual)
 	})
 }

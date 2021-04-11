@@ -31,6 +31,9 @@ func CreateSnapshot() string {
 
 func ReadSnapshot(snapshot, key string) (string, error) {
 	data, err := xattr.Get(path+snapshot, GetName(key))
+	if data == nil {
+		return "", err
+	}
 	if err != nil {
 		return ReadData(key)
 	}
@@ -42,13 +45,8 @@ func ReadSnapshot(snapshot, key string) (string, error) {
 	return value, nil
 }
 
-func writeSnapshot(snapshot, key, value string) bool {
-	compressed, err := Compress(value)
-	if err != nil {
-		log.Println(err)
-		return false
-	}
-	if err = xattr.Set(path+snapshot, GetName(key), compressed); err != nil {
+func writeSnapshot(snapshot, key string, data []byte) bool {
+	if err := xattr.Set(path+snapshot, GetName(key), data); err != nil {
 		log.Println(err)
 		return false
 	}
@@ -62,10 +60,19 @@ func CopyOnWrite(key string) error {
 	for _, snapshot := range snapshots {
 		_, err := xattr.Get(path+snapshot, GetName(key))
 		if err != nil {
-			value, _ := ReadData(key)
-			if !writeSnapshot(snapshot, key, value) {
-				return errors.New("Snapshot Copy on Write failure")
+			data, _ := ReadCompressed(key)
+			if !writeSnapshot(snapshot, key, data) {
+				return errors.New("failed to write data to snapshot(s)")
 			}
+		}
+	}
+	return nil
+}
+
+func CopyOnWriteNil(key string) error {
+	for _, snapshot := range snapshots {
+		if !writeSnapshot(snapshot, key, nil) {
+			return errors.New("failed to write nil to snapshot(s)")
 		}
 	}
 	return nil
